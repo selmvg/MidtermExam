@@ -5,299 +5,38 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #f7f9fe 0%, #e6e9fd 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Decorative circles */
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(10px);
-            z-index: 0;
-        }
-
-        .circle-1 {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(45deg, #6c5ce7, #a363d9);
-            top: -50px;
-            right: -50px;
-        }
-
-        .circle-2 {
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(45deg, #ff7675, #fd79a8);
-            bottom: 50px;
-            left: -30px;
-        }
-
-        .circle-3 {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
-            bottom: 30%;
-            right: 20%;
-        }
-
-        .contact-initial {
-            width: 40px;
-            height: 40px;
-            font-weight: bold;
-        }
+        .contact-initial { width: 40px; height: 40px; font-weight: bold; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1060; }
+        .contact-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .list-group-item { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .modal.fade .modal-dialog { transition: transform 0.3s ease-out, opacity 0.3s ease; transform: scale(0.9); opacity: 0; }
+        .modal.show .modal-dialog { transform: scale(1); opacity: 1; }
+        .btn-icon { display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 36px; height: 36px; padding: 0; }
+        .logout-btn { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; background-color: #dc3545; color: white; border: none; transition: all 0.2s ease; text-decoration: none; }
+        .logout-btn:hover { background-color: #c82333; color: white; }
+        .contact-actions { opacity: 0; transition: opacity 0.2s ease; display: flex; flex-direction: row; }
+        .list-group-item:hover .contact-actions { opacity: 1; }
+        .add-contact-container { display: flex; justify-content: center; margin-top: 20px; margin-bottom: 20px; }
+        .btn-loading .spinner-border { width: 1rem; height: 1rem; margin-right: 0.5rem; }
+        .error-text { color: #dc3545; font-size: 0.875em; display: none; }
+        .phone-input-group { display: flex; align-items: center; }
+        .phone-prefix { width: 80px; flex-shrink: 0; border-radius: 0.25rem 0 0 0.25rem; }
+        .phone-number { border-radius: 0 0.25rem 0.25rem 0; }
         
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1060;
-        }
-        
-        .contact-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .list-group-item {
-            transition: all 0.3s ease;
-            border-radius: 10px !important;
-            margin-bottom: 8px;
-            border: none !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .list-group-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .modal.fade .modal-dialog {
-            transition: transform 0.3s ease-out, opacity 0.3s ease;
-            transform: scale(0.9);
-            opacity: 0;
-        }
-        
-        .modal.show .modal-dialog {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-icon:hover {
-            transform: translateY(-2px);
-        }
-        
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 25px;
-            background: linear-gradient(45deg, #db4437, #e74c3c);
-            color: white;
-            border: none;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            z-index: 10;
-            box-shadow: 0 3px 10px rgba(219, 68, 55, 0.2);
-        }
-        
-        .logout-btn:hover {
-            background: linear-gradient(45deg, #c0392b, #d63031);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(219, 68, 55, 0.3);
-        }
-        
-        .contact-actions {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            display: flex;
-            flex-direction: row;
-        }
-        
-        .list-group-item:hover .contact-actions {
-            opacity: 1;
-        }
-        
-        .add-contact-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .btn-loading .spinner-border {
-            width: 1rem;
-            height: 1rem;
-            margin-right: 0.5rem;
-        }
-        
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(45deg, #4285f4, #34a0ff);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            transition: all 0.2s ease;
-            box-shadow: 0 3px 10px rgba(66, 133, 244, 0.2);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(45deg, #3367d6, #2a7de1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(45deg, #db4437, #e74c3c);
-            border: none;
-            border-radius: 25px;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-danger:hover {
-            background: linear-gradient(45deg, #c0392b, #d63031);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(45deg, #7f8c8d, #95a5a6);
-            border: none;
-            border-radius: 25px;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-secondary:hover {
-            background: linear-gradient(45deg, #636e72, #7f8c8d);
-        }
-        
-        .btn-outline-primary {
-            color: #4285f4;
-            border-color: #4285f4;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: #4285f4;
-            color: white;
-        }
-        
-        .btn-outline-danger {
-            color: #db4437;
-            border-color: #db4437;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-outline-danger:hover {
-            background-color: #db4437;
-            color: white;
-        }
-        
-        h2 {
-            color: #2d3436;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        .form-control {
-            border-radius: 10px;
-            padding: 10px 15px;
-            border: 1px solid #dfe6e9;
-            transition: all 0.2s ease;
-        }
-        
-        .form-control:focus {
-            border-color: #4285f4;
-            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
-        }
-        
-        .input-group .btn {
-            border-top-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
     </style>
 </head>
-<body>
-    <!-- Decorative circles -->
-    <div class="circle circle-1"></div>
-    <div class="circle circle-2"></div>
-    <div class="circle circle-3"></div>
-
-    <!-- Logout Button -->
-    <a href="/" class="logout-btn">
-        <span class="material-icons">logout</span>
-        Logout
-    </a>
-
-    <div class="container">
-        <h2 class="text-center mb-4">My Google Contacts</h2>
-        <div id="loading" class="text-center text-muted">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading contacts...</p>
-        </div>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+    <a href="/" class="logout-btn"><span>🚪 Logout</span></a>
+    <div class="container bg-white shadow-sm rounded p-4">
+        <h2 class="text-center mb-4">My Contacts</h2>
+        <div id="loading" class="text-center text-muted">Loading contacts...</div>
         <ul class="list-group mb-4" id="contacts-list"></ul>
         <div class="add-contact-container">
-            <button class="btn btn-primary" onclick="openAddModal()">
-                <span class="material-icons" style="vertical-align: middle; margin-right: 5px; font-size: 18px;">add_circle</span>
-                Add New Contact
-            </button>
+            <button class="btn btn-primary rounded-lg p-2" onclick="openAddModal()">Add New Contact</button>
         </div>
     </div>
 
-    <!-- Add/Edit Contact Modal -->
     <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -307,28 +46,22 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="contact-resourceName">
-
                     <div class="mb-3">
                         <label class="form-label"><strong>Name:</strong></label>
                         <input type="text" id="contact-name" class="form-control" placeholder="Enter name">
+                        <small id="name-error" class="error-text">Name is required</small>
                     </div>
-
                     <div class="mb-3" id="phone-numbers-container">
                         <label class="form-label"><strong>Phone Numbers:</strong></label>
                         <div id="phone-numbers"></div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPhoneNumberField()">
-                            <span class="material-icons" style="vertical-align: middle; font-size: 16px;">add</span>
-                            Add Phone Number
-                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPhoneNumberField()">Add Phone Number</button>
+                        <small id="phone-error" class="error-text">At least one valid phone number is required</small>
                     </div>
-
                     <div class="mb-3" id="emails-container">
                         <label class="form-label"><strong>Email Addresses:</strong></label>
                         <div id="emails"></div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addEmailField()">
-                            <span class="material-icons" style="vertical-align: middle; font-size: 16px;">add</span>
-                            Add Email
-                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addEmailField()">Add Email</button>
+                        <small id="email-error" class="error-text">Invalid email format</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -339,17 +72,14 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-            <div class="modal-header">
+                <div class="modal-header">
                     <h5 class="modal-title">Confirm Deletion</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p id="deleteMessage"></p>
-                </div>
+                <div class="modal-body"><p id="deleteMessage"></p></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
@@ -359,10 +89,15 @@
     </div>
 
     <script>
+        const COUNTRY_CODES = {
+            "PH": "+63", "US": "+1", "UK": "+44", "IN": "+91", "AU": "+61"
+        };
+        const EMAIL_REGEX = /^[A-Za-z0-9+_.-]+@(.+)$/;
+    
         document.addEventListener("DOMContentLoaded", () => {
             fetchContacts();
         });
-
+    
         function fetchContacts() {
             fetch('/api/contacts')
                 .then(response => response.json())
@@ -370,23 +105,16 @@
                     const contactsList = document.getElementById('contacts-list');
                     const loadingDiv = document.getElementById('loading');
                     contactsList.innerHTML = "";
-
                     if (data.connections && data.connections.length > 0) {
                         loadingDiv.style.display = "none";
                         data.connections.forEach(contact => {
                             let name = contact.names ? contact.names[0].displayName : 'No Name';
-                            let phones = contact.phoneNumbers 
-                                ? contact.phoneNumbers.map(p => `📱 ${p.value}`).join(' ') 
-                                : 'No Phone';
-                            let emails = contact.emailAddresses 
-                                ? contact.emailAddresses.map(e => `✉️ ${e.value}`).join(' ') 
-                                : 'No Email';
+                            let phones = contact.phoneNumbers ? contact.phoneNumbers.map(p => `📱 ${p.value}`).join(' ') : 'No Phone';
+                            let emails = contact.emailAddresses ? contact.emailAddresses.map(e => `✉️ ${e.value}`).join(' ') : 'No Email';
                             let resourceName = contact.resourceName || '';
-
-                            let colors = ["#4285f4", "#db4437", "#f4b400", "#0f9d58", "#6c5ce7", "#00b894"];
+                            let colors = ["#007bff", "#dc3545", "#28a745", "#ffc107", "#6610f2", "#20c997"];
                             let colorIndex = name.charCodeAt(0) % colors.length;
                             let bgColor = colors[colorIndex];
-
                             let li = document.createElement('li');
                             li.className = "list-group-item d-flex justify-content-between align-items-center";
                             li.innerHTML = `
@@ -401,21 +129,17 @@
                                 </div>
                                 <div class="contact-actions">
                                     <button class="btn btn-icon btn-outline-primary me-2" onclick="openEditModal('${resourceName}', '${name}', '${encodeURIComponent(JSON.stringify(contact.phoneNumbers || []))}', '${encodeURIComponent(JSON.stringify(contact.emailAddresses || []))}')">
-                                        <span class="material-icons">edit</span>
+                                        <i class="ph ph-pencil-simple"></i>
                                     </button>
                                     <button class="btn btn-icon btn-outline-danger" onclick="deleteContact('${resourceName}', '${name.replace(/'/g, "\\'")}')">
-                                        <span class="material-icons">delete</span>
+                                        <i class="ph ph-trash-simple"></i>
                                     </button>
                                 </div>
                             `;
-
                             li.style.opacity = 0;
                             li.style.transform = "translateY(10px)";
                             contactsList.appendChild(li);
-                            setTimeout(() => {
-                                li.style.opacity = 1;
-                                li.style.transform = "translateY(0)";
-                            }, 100);
+                            setTimeout(() => { li.style.opacity = 1; li.style.transform = "translateY(0)"; }, 100);
                         });
                     } else {
                         loadingDiv.textContent = "No contacts found.";
@@ -426,7 +150,7 @@
                     document.getElementById('loading').textContent = "Failed to load contacts.";
                 });
         }
-
+    
         function openAddModal() {
             document.getElementById("contactModalLabel").textContent = "Add Contact";
             document.getElementById("contact-resourceName").value = "";
@@ -435,25 +159,38 @@
             document.getElementById("emails").innerHTML = "";
             addPhoneNumberField();
             addEmailField();
+            resetErrors();
             new bootstrap.Modal(document.getElementById('contactModal')).show();
         }
-
+    
         function openEditModal(resourceName, name, phoneNumbersJson, emailsJson) {
             document.getElementById("contactModalLabel").textContent = "Edit Contact";
             document.getElementById("contact-resourceName").value = resourceName;
             document.getElementById("contact-name").value = name;
-
-            const phoneNumbers = JSON.parse(decodeURIComponent(phoneNumbersJson)).map(p => p.value);
+        
+            // Parse phone numbers and separate country code from number
+            const phoneNumbers = JSON.parse(decodeURIComponent(phoneNumbersJson)).map(p => {
+                const value = p.value;
+                for (let [country, code] of Object.entries(COUNTRY_CODES)) {
+                    if (value.startsWith(code)) {
+                        return { code, number: value.slice(code.length) };
+                    }
+                }
+                return { code: "+63", number: value }; // Default to +63 if no match
+            });
+        
             const emails = JSON.parse(decodeURIComponent(emailsJson)).map(e => e.value);
-
+        
+            // Populate phone numbers
             const phoneContainer = document.getElementById("phone-numbers");
             phoneContainer.innerHTML = "";
             if (phoneNumbers.length > 0) {
-                phoneNumbers.forEach(phone => addPhoneNumberField(phone));
+                phoneNumbers.forEach(phone => addPhoneNumberField(phone.number, phone.code));
             } else {
                 addPhoneNumberField();
             }
-
+        
+            // Populate emails
             const emailContainer = document.getElementById("emails");
             emailContainer.innerHTML = "";
             if (emails.length > 0) {
@@ -461,83 +198,115 @@
             } else {
                 addEmailField();
             }
-
+        
+            resetErrors();
             new bootstrap.Modal(document.getElementById('contactModal')).show();
         }
-
-        function addPhoneNumberField(value = "") {
+        
+        function addPhoneNumberField(value = "", selectedCode = "+63") {
             const phoneContainer = document.getElementById("phone-numbers");
             const div = document.createElement("div");
-            div.className = "input-group mb-2";
+            div.className = "input-group mb-2 phone-input-group";
             div.innerHTML = `
-                <input type="text" class="form-control" placeholder="Enter phone number" value="${value}">
-                <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">
-                    <span class="material-icons" style="font-size: 16px;">remove</span>
-                </button>
+                <select class="form-select phone-prefix" style="max-width: 80px;">
+                    ${Object.entries(COUNTRY_CODES).map(([code, prefix]) => `<option value="${prefix}" ${prefix === selectedCode ? 'selected' : ''}>${prefix}</option>`).join('')}
+                </select>
+                <input type="text" class="form-control phone-number" placeholder="Enter 10-digit number" value="${value.replace(/^\+\d+/, '')}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if (this.value.length > 10) this.value = this.value.slice(0, 10);">
+                <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">Remove</button>
             `;
             phoneContainer.appendChild(div);
         }
-
+    
         function addEmailField(value = "") {
             const emailContainer = document.getElementById("emails");
             const div = document.createElement("div");
             div.className = "input-group mb-2";
             div.innerHTML = `
                 <input type="email" class="form-control" placeholder="Enter email" value="${value}">
-                <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">
-                    <span class="material-icons" style="font-size: 16px;">remove</span>
-                </button>
+                <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">Remove</button>
             `;
             emailContainer.appendChild(div);
         }
-
+    
+        function resetErrors() {
+            document.getElementById("name-error").style.display = "none";
+            document.getElementById("phone-error").style.display = "none";
+            document.getElementById("email-error").style.display = "none";
+        }
+    
         function saveContact() {
             const saveButton = document.getElementById("save-contact");
             saveButton.disabled = true;
             saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-
+    
             const resourceName = document.getElementById("contact-resourceName").value;
-            const name = document.getElementById("contact-name").value;
-            const phoneInputs = document.querySelectorAll("#phone-numbers input");
-            const phoneNumbers = Array.from(phoneInputs).map(input => input.value).filter(value => value.trim() !== "");
+            const name = document.getElementById("contact-name").value.trim();
+            const phoneInputs = document.querySelectorAll("#phone-numbers .input-group");
+            const phoneNumbers = Array.from(phoneInputs).map(group => {
+                const code = group.querySelector("select").value;
+                const number = group.querySelector("input").value.trim();
+                return number ? `${code}${number}` : "";
+            }).filter(value => value);
             const emailInputs = document.querySelectorAll("#emails input");
-            const emails = Array.from(emailInputs).map(input => input.value).filter(value => value.trim() !== "");
-
+            const emails = Array.from(emailInputs).map(input => input.value.trim()).filter(value => value);
+    
+            resetErrors();
+            let hasError = false;
+    
+            if (!name) {
+                document.getElementById("name-error").style.display = "block";
+                hasError = true;
+            }
+            if (phoneNumbers.length === 0) {
+                document.getElementById("phone-error").style.display = "block";
+                hasError = true;
+            }
+            for (let email of emails) {
+                if (!EMAIL_REGEX.test(email)) {
+                    document.getElementById("email-error").style.display = "block";
+                    hasError = true;
+                    break;
+                }
+            }
+    
+            if (hasError) {
+                saveButton.disabled = false;
+                saveButton.innerHTML = "Save";
+                return;
+            }
+    
             const contactJson = {
                 names: [{ familyName: name }],
                 phoneNumbers: phoneNumbers.map(phone => ({ value: phone })),
                 emailAddresses: emails.map(email => ({ value: email }))
             };
-
+    
             const url = resourceName ? "/api/contacts/update" : "/api/contacts";
             const method = "POST";
             const body = resourceName
-                ? new URLSearchParams({ 
-                    resourceName, 
-                    familyName: name, 
-                    emails: emails.join(","), 
-                    phoneNumbers: phoneNumbers.join(",") 
-                  })
+                ? new URLSearchParams({ resourceName, familyName: name, emails: emails.join(","), phoneNumbers: phoneNumbers.join(",") })
                 : JSON.stringify(contactJson);
-
+    
             fetch(url, {
                 method: method,
                 headers: { "Content-Type": resourceName ? "application/x-www-form-urlencoded" : "application/json" },
                 body: body
             })
-            .then(response => response.text())
-            .then(() => {
+            .then(response => response.text().then(text => ({ status: response.status, text })))
+            .then(({ status, text }) => {
+                if (status >= 400) throw new Error(text);
                 location.reload();
             })
             .catch(error => {
                 console.error("Error saving contact:", error);
                 saveButton.disabled = false;
                 saveButton.innerHTML = "Save";
+                alert("Error: " + (error.message.includes("error") ? JSON.parse(error.message).error : "Failed to save contact"));
             });
         }
-
+    
         document.getElementById("save-contact").addEventListener("click", saveContact);
-
+    
         function deleteContact(resourceName, name) {
             document.getElementById("deleteMessage").innerHTML = `Are you sure you want to delete contact <strong>${name}</strong>?`;
             let deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
@@ -546,16 +315,13 @@
             confirmDeleteButton.onclick = function() {
                 confirmDeleteButton.disabled = true;
                 confirmDeleteButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
-
                 fetch("/api/contacts/delete", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: new URLSearchParams({ resourceName: resourceName })
                 })
                 .then(response => response.text())
-                .then(() => {
-                    location.reload();
-                })
+                .then(() => location.reload())
                 .catch(error => {
                     console.error("Error deleting contact:", error);
                     confirmDeleteButton.disabled = false;
@@ -566,4 +332,3 @@
     </script>
 </body>
 </html>
-
