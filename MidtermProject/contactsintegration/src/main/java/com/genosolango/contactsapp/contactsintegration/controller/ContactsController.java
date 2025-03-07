@@ -14,6 +14,7 @@ import com.genosolango.contactsapp.contactsintegration.service.GoogleContactsSer
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -44,17 +45,15 @@ public class ContactsController {
     public String createContact(@AuthenticationPrincipal OAuth2User principal, @RequestBody Map<String, Object> contactData) {
         return googleContactsService.createContact(principal.getName(), contactData);
     }
-
     
-     @PostMapping("/update")
+    @PostMapping("/update")
     public String updateContact(
             @RequestParam String resourceName,
             @RequestParam String familyName,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phoneNumber) {
-
+            @RequestParam(required = false) List<String> phoneNumbers) {
         try {
-            googleContactsService.updateContact(resourceName, familyName, email, phoneNumber);
+            googleContactsService.updateContact(resourceName, familyName, email, phoneNumbers);
             System.out.println("Contact updated: " + resourceName);
             return "Contact updated successfully";
         } catch (IOException e) {

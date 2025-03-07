@@ -3,6 +3,7 @@ package com.genosolango.contactsapp.contactsintegration.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -83,18 +84,6 @@ public class GoogleContactsService {
         }
     }
 
- 
-   public String createContact(String userName, Map<String, Object> contactData) {
-        String url = "https://people.googleapis.com/v1/people:createContact";
-    
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(getAccessToken(userName));
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(contactData, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        return response.getBody();
-    }
-
     private String getAccessToken() {
         Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
@@ -109,6 +98,19 @@ public class GoogleContactsService {
         throw new RuntimeException("OAuth2 authentication failed!");
     }
 
+ 
+    public String createContact(String userName, Map<String, Object> contactData) {
+        String url = "https://people.googleapis.com/v1/people:createContact";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(getAccessToken(userName));
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(contactData, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+        return response.getBody();
+    }
+
+
     private PeopleService createPeopleService() {
         return new PeopleService.Builder(
                 new com.google.api.client.http.javanet.NetHttpTransport(),
@@ -117,17 +119,21 @@ public class GoogleContactsService {
         ).setApplicationName("Google Contacts App").build();
     }
 
-    public void updateContact(String resourceName, String familyName, String email, String phoneNumber) throws IOException {
+ public void updateContact(String resourceName, String familyName, String email, List<String> phoneNumbers) throws IOException {
         PeopleService peopleService = createPeopleService();
         Person existingContact = peopleService.people().get(resourceName)
                 .setPersonFields("names,emailAddresses,phoneNumbers")
                 .execute();
 
+        List<PhoneNumber> phoneNumberList = phoneNumbers != null && !phoneNumbers.isEmpty()
+                ? phoneNumbers.stream().map(phone -> new PhoneNumber().setValue(phone)).collect(Collectors.toList())
+                : null;
+
         Person updatedContact = new Person()
                 .setEtag(existingContact.getEtag())
                 .setNames(List.of(new Name().setGivenName(null).setFamilyName(familyName)))
                 .setEmailAddresses(email != null && !email.isEmpty() ? List.of(new EmailAddress().setValue(email)) : null)
-                .setPhoneNumbers(phoneNumber != null && !phoneNumber.isEmpty() ? List.of(new PhoneNumber().setValue(phoneNumber)) : null);
+                .setPhoneNumbers(phoneNumberList);
 
         peopleService.people().updateContact(resourceName, updatedContact)
                 .setUpdatePersonFields("names,emailAddresses,phoneNumbers")

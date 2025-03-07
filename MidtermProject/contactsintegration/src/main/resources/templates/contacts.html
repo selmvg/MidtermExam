@@ -83,18 +83,14 @@
 </head>
 <body class="bg-light d-flex justify-content-center align-items-center vh-100">
     <!-- Logout Button -->
-   <!-- <a href="/perform_logout" class="logout-btn" style="text-decoration: none; color: inherit;">
-        <i class="ph ph-sign-out"></i>
-        Logout
-    </a>-->
+    <a href="/" class="logout-btn" style="background-color: #dc3545; color: white; text-decoration: none;">
+        <span>🚪 Logout</span>
+    </a>
+
     <div class="container bg-white shadow-sm rounded p-4">
         <h2 class="text-center mb-4"> My Contacts</h2>
-
         <div id="loading" class="text-center text-muted">Loading contacts...</div>
-
         <ul class="list-group mb-4" id="contacts-list"></ul>
-
-        <!-- Add Contact Button - Centered -->
         <div class="add-contact-container">
             <button class="btn btn-primary rounded-lg p-2" onclick="openAddModal()">
                 Add New Contact
@@ -112,17 +108,17 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="contact-resourceName">
-
                     <div class="mb-3">
                         <label class="form-label"><strong>Name:</strong></label>
                         <input type="text" id="contact-name" class="form-control" placeholder="Enter name">
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Phone:</strong></label>
-                        <input type="text" id="contact-phone" class="form-control" placeholder="Enter phone number">
+                    <div class="mb-3" id="phone-numbers-container">
+                        <label class="form-label"><strong>Phone Numbers:</strong></label>
+                        <div id="phone-numbers"></div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPhoneNumberField()">
+                            Add Phone Number
+                        </button>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label"><strong>Email:</strong></label>
                         <input type="email" id="contact-email" class="form-control" placeholder="Enter email">
@@ -136,8 +132,8 @@
         </div>
     </div>
 
-     <!-- Delete Confirmation Modal -->
-     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -154,12 +150,12 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             fetchContacts();
         });
-
+    
         function fetchContacts() {
             fetch('/api/contacts')
                 .then(response => response.json())
@@ -167,19 +163,21 @@
                     const contactsList = document.getElementById('contacts-list');
                     const loadingDiv = document.getElementById('loading');
                     contactsList.innerHTML = "";
-
+    
                     if (data.connections && data.connections.length > 0) {
                         loadingDiv.style.display = "none";
                         data.connections.forEach(contact => {
                             let name = contact.names ? contact.names[0].displayName : 'No Name';
-                            let phone = contact.phoneNumbers && contact.phoneNumbers.length > 0 ? contact.phoneNumbers[0].value : 'No Phone';
+                            let phones = contact.phoneNumbers 
+                                ? contact.phoneNumbers.map(p => `📱 ${p.value}`).join(' ') 
+                                : 'No Phone';
                             let email = contact.emailAddresses && contact.emailAddresses.length > 0 ? contact.emailAddresses[0].value : 'No Email';
                             let resourceName = contact.resourceName || '';
-
+    
                             let colors = ["#007bff", "#dc3545", "#28a745", "#ffc107", "#6610f2", "#20c997"];
                             let colorIndex = name.charCodeAt(0) % colors.length;
                             let bgColor = colors[colorIndex];
-
+    
                             let li = document.createElement('li');
                             li.className = "list-group-item d-flex justify-content-between align-items-center";
                             li.innerHTML = `
@@ -189,11 +187,11 @@
                                     </div>
                                     <div>
                                         <p class="mb-0 fw-semibold">${name}</p>
-                                        <small class="text-muted">📱 ${phone} | ✉️ ${email}</small>
+                                        <small class="text-muted">${phones} | ✉️ ${email}</small>
                                     </div>
                                 </div>
                                 <div class="contact-actions">
-                                    <button class="btn btn-icon btn-outline-primary me-2" onclick="openEditModal('${resourceName}', '${name}', '${phone}', '${email}')">
+                                    <button class="btn btn-icon btn-outline-primary me-2" onclick="openEditModal('${resourceName}', '${name}', '${encodeURIComponent(JSON.stringify(contact.phoneNumbers || []))}', '${email}')">
                                         <i class="ph ph-pencil-simple"></i>
                                     </button>
                                     <button class="btn btn-icon btn-outline-danger" onclick="deleteContact('${resourceName}', '${name.replace(/'/g, "\\'")}')">
@@ -201,7 +199,7 @@
                                     </button>
                                 </div>
                             `;
-
+    
                             li.style.opacity = 0;
                             li.style.transform = "translateY(10px)";
                             contactsList.appendChild(li);
@@ -219,53 +217,86 @@
                     document.getElementById('loading').textContent = "Failed to load contacts.";
                 });
         }
-
+    
         function openAddModal() {
             document.getElementById("contactModalLabel").textContent = "Add Contact";
             document.getElementById("contact-resourceName").value = "";
             document.getElementById("contact-name").value = "";
-            document.getElementById("contact-phone").value = "";
             document.getElementById("contact-email").value = "";
+            document.getElementById("phone-numbers").innerHTML = "";
+            addPhoneNumberField();
             new bootstrap.Modal(document.getElementById('contactModal')).show();
         }
-
-        function openEditModal(resourceName, name, phone, email) {
+    
+        function openEditModal(resourceName, name, phoneNumbersJson, email) {
             document.getElementById("contactModalLabel").textContent = "Edit Contact";
             document.getElementById("contact-resourceName").value = resourceName;
             document.getElementById("contact-name").value = name;
-            document.getElementById("contact-phone").value = phone;
             document.getElementById("contact-email").value = email;
+    
+            const phoneNumbers = JSON.parse(decodeURIComponent(phoneNumbersJson)).map(p => p.value);
+            const phoneContainer = document.getElementById("phone-numbers");
+            phoneContainer.innerHTML = "";
+            if (phoneNumbers.length > 0) {
+                phoneNumbers.forEach(phone => addPhoneNumberField(phone));
+            } else {
+                addPhoneNumberField();
+            }
+    
             new bootstrap.Modal(document.getElementById('contactModal')).show();
         }
-
+    
+        function addPhoneNumberField(value = "") {
+            const phoneContainer = document.getElementById("phone-numbers");
+            const div = document.createElement("div");
+            div.className = "input-group mb-2";
+            div.innerHTML = `
+                <input type="text" class="form-control" placeholder="Enter phone number" value="${value}">
+                <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            phoneContainer.appendChild(div);
+        }
+    
         function saveContact() {
+            const saveButton = document.getElementById("save-contact");
+            saveButton.disabled = true; // Disable the button immediately
+    
             const resourceName = document.getElementById("contact-resourceName").value;
             const name = document.getElementById("contact-name").value;
-            const phone = document.getElementById("contact-phone").value;
             const email = document.getElementById("contact-email").value;
-            
+            const phoneInputs = document.querySelectorAll("#phone-numbers input");
+            const phoneNumbers = Array.from(phoneInputs).map(input => input.value).filter(value => value.trim() !== "");
+    
             const contactJson = {
                 names: [{ familyName: name }],
-                phoneNumbers: [{ value: phone }],
+                phoneNumbers: phoneNumbers.map(phone => ({ value: phone })),
                 emailAddresses: [{ value: email }]
             };
-
+    
             const url = resourceName ? "/api/contacts/update" : "/api/contacts";
-            const method = resourceName ? "POST" : "POST";
-            const body = resourceName ? new URLSearchParams({ resourceName, familyName: name, email, phoneNumber: phone }) : JSON.stringify(contactJson);
-
+            const method = "POST";
+            const body = resourceName
+                ? new URLSearchParams({ resourceName, familyName: name, email, phoneNumbers: phoneNumbers.join(",") })
+                : JSON.stringify(contactJson);
+    
             fetch(url, {
                 method: method,
                 headers: { "Content-Type": resourceName ? "application/x-www-form-urlencoded" : "application/json" },
                 body: body
             })
             .then(response => response.text())
-            .then(() => location.reload())
-            .catch(error => console.error("Error saving contact:", error));
+            .then(() => {
+                location.reload(); // Reload the page on success
+            })
+            .catch(error => {
+                console.error("Error saving contact:", error);
+                saveButton.disabled = false; // Re-enable the button on error
+            });
+            // Note: The button remains disabled on success because the page reloads
         }
-
+    
         document.getElementById("save-contact").addEventListener("click", saveContact);
-
+    
         function deleteContact(resourceName, name) {
             document.getElementById("deleteMessage").innerHTML = `Are you sure you want to delete contact <strong>${name}</strong>?`;
             let deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
