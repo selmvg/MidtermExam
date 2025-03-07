@@ -41,26 +41,27 @@ public class ContactsController {
             return ResponseEntity.status(500).body("{\"error\": \"" + e.getMessage().replace("\"", "'") + "\"}");
         }
     }
+
+
     @PostMapping
     public String createContact(@AuthenticationPrincipal OAuth2User principal, @RequestBody Map<String, Object> contactData) {
         return googleContactsService.createContact(principal.getName(), contactData);
     }
-    
+
     @PostMapping("/update")
     public String updateContact(
             @RequestParam String resourceName,
             @RequestParam String familyName,
-            @RequestParam(required = false) String email,
+            @RequestParam(required = false) List<String> emails,
             @RequestParam(required = false) List<String> phoneNumbers) {
         try {
-            googleContactsService.updateContact(resourceName, familyName, email, phoneNumbers);
+            googleContactsService.updateContact(resourceName, familyName, emails, phoneNumbers);
             System.out.println("Contact updated: " + resourceName);
             return "Contact updated successfully";
         } catch (IOException e) {
             return "error";
         }
     }
-
     @PostMapping("/delete")
     public String deleteContact(@RequestParam String resourceName) {
         try {
